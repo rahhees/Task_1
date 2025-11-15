@@ -1,118 +1,69 @@
-USE [master]
-GO
+create database Joins;
 
-/****** Object:  Database [BatchExample]    Script Date: 11/15/2025 7:39:56 AM ******/
-CREATE DATABASE [BatchExample]
- CONTAINMENT = NONE
- ON  PRIMARY 
-( NAME = N'BatchExample', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\BatchExample.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
- LOG ON 
-( NAME = N'BatchExample_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\BatchExample_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
- WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
-GO
+use joins;
 
-IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
-begin
-EXEC [BatchExample].[dbo].[sp_fulltext_database] @action = 'enable'
-end
-GO
+create table Authors(
+	AuthorId int primary key identity(1,1),
+	AuthorName Nvarchar(40)
+);
 
-ALTER DATABASE [BatchExample] SET ANSI_NULL_DEFAULT OFF 
-GO
+create table Publishers(
+	PublisherId int primary key identity(1,1),
+	PublisherName nvarchar(50)
+);
 
-ALTER DATABASE [BatchExample] SET ANSI_NULLS OFF 
-GO
+create table Books(
+	BookId int primary key identity(1,1),
+	Title varchar(40) NOT NULL,
+	AuthorID int not null,
+	PublisherId int not null,
+	foreign key(AuthorId) references authors(authorId)
+	on delete cascade
+	on update cascade,
 
-ALTER DATABASE [BatchExample] SET ANSI_PADDING OFF 
-GO
+	foreign key(publisherid)references Publishers(publisherId)
+	on delete cascade
+	on update cascade
 
-ALTER DATABASE [BatchExample] SET ANSI_WARNINGS OFF 
-GO
+);
 
-ALTER DATABASE [BatchExample] SET ARITHABORT OFF 
-GO
+insert into Authors(AuthorName)
+values('J.K.Rowling'), ('George Orwell'), ('Chetan Bhagat');
 
-ALTER DATABASE [BatchExample] SET AUTO_CLOSE ON 
-GO
+insert into Publishers(PublisherName)
+values('Bloomsbury'), ('Penguin'), ('HarperCollins'),
+	('Bloomsbury'), ('Penguin'), ('HarperCollins');
 
-ALTER DATABASE [BatchExample] SET AUTO_SHRINK OFF 
-GO
+insert into Books(Title,AuthorID,PublisherId)
+values
+('Harry Potter', 1, 1),
+('1984', 2, 2),
+('Animal Farm', 2, 2),
+('2 States', 3, 3);
 
-ALTER DATABASE [BatchExample] SET AUTO_UPDATE_STATISTICS ON 
-GO
+select Books.Title,Authors.AuthorName,Publishers.PublisherName from Books inner join Authors on Books.AuthorID = Authors.AuthorId
+inner join Publishers on Books.PublisherId = Publishers.PublisherId;
 
-ALTER DATABASE [BatchExample] SET CURSOR_CLOSE_ON_COMMIT OFF 
-GO
+SELECT  Books.Title, Authors.AuthorName, Publishers.PublisherName FROM Books
+LEFT JOIN Authors ON Books.AuthorID = Authors.AuthorID
+LEFT JOIN Publishers ON Books.PublisherID = Publishers.PublisherID;
 
-ALTER DATABASE [BatchExample] SET CURSOR_DEFAULT  GLOBAL 
-GO
+SELECT Books.Title,Authors.AuthorName FROM Books
+RIGHT JOIN Authors ON Books.AuthorID = Authors.AuthorID;
 
-ALTER DATABASE [BatchExample] SET CONCAT_NULL_YIELDS_NULL OFF 
-GO
+SELECT Books.Title,Authors.AuthorName
+FROM Books
+FULL OUTER JOIN Authors ON Books.AuthorID = Authors.AuthorID;
 
-ALTER DATABASE [BatchExample] SET NUMERIC_ROUNDABORT OFF 
-GO
+delete from Authors where AuthorId=2;
 
-ALTER DATABASE [BatchExample] SET QUOTED_IDENTIFIER OFF 
-GO
+update Publishers set PublisherId=10 where PublisherId=2;
 
-ALTER DATABASE [BatchExample] SET RECURSIVE_TRIGGERS OFF 
-GO
+SELECT AuthorName AS Name FROM Authors
+UNION
+SELECT PublisherName AS Name FROM Publishers;
 
-ALTER DATABASE [BatchExample] SET  ENABLE_BROKER 
-GO
-
-ALTER DATABASE [BatchExample] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
-GO
-
-ALTER DATABASE [BatchExample] SET DATE_CORRELATION_OPTIMIZATION OFF 
-GO
-
-ALTER DATABASE [BatchExample] SET TRUSTWORTHY OFF 
-GO
-
-ALTER DATABASE [BatchExample] SET ALLOW_SNAPSHOT_ISOLATION OFF 
-GO
-
-ALTER DATABASE [BatchExample] SET PARAMETERIZATION SIMPLE 
-GO
-
-ALTER DATABASE [BatchExample] SET READ_COMMITTED_SNAPSHOT OFF 
-GO
-
-ALTER DATABASE [BatchExample] SET HONOR_BROKER_PRIORITY OFF 
-GO
-
-ALTER DATABASE [BatchExample] SET RECOVERY SIMPLE 
-GO
-
-ALTER DATABASE [BatchExample] SET  MULTI_USER 
-GO
-
-ALTER DATABASE [BatchExample] SET PAGE_VERIFY CHECKSUM  
-GO
-
-ALTER DATABASE [BatchExample] SET DB_CHAINING OFF 
-GO
-
-ALTER DATABASE [BatchExample] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
-GO
-
-ALTER DATABASE [BatchExample] SET TARGET_RECOVERY_TIME = 60 SECONDS 
-GO
-
-ALTER DATABASE [BatchExample] SET DELAYED_DURABILITY = DISABLED 
-GO
-
-ALTER DATABASE [BatchExample] SET ACCELERATED_DATABASE_RECOVERY = OFF  
-GO
-
-ALTER DATABASE [BatchExample] SET QUERY_STORE = ON
-GO
-
-ALTER DATABASE [BatchExample] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 30), DATA_FLUSH_INTERVAL_SECONDS = 900, INTERVAL_LENGTH_MINUTES = 60, MAX_STORAGE_SIZE_MB = 1000, QUERY_CAPTURE_MODE = AUTO, SIZE_BASED_CLEANUP_MODE = AUTO, MAX_PLANS_PER_QUERY = 200, WAIT_STATS_CAPTURE_MODE = ON)
-GO
-
-ALTER DATABASE [BatchExample] SET  READ_WRITE 
-GO
+SELECT AuthorName AS Name FROM Authors
+UNION ALL
+SELECT PublisherName AS Name FROM Publishers;
 
